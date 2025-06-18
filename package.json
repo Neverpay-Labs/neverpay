@@ -1,7 +1,7 @@
 {
   "name": "neverpay",
   "version": "0.1.0",
-  "private":
+  "private": true,
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
@@ -12,6 +12,7 @@
     "format": "prettier --write \"src/**/*.ts\""
   },
   "dependencies": {
+    "dotenv": "^10.0.0",
     "express": "^4.17.1"
   },
   "devDependencies": {

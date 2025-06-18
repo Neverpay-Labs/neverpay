@@ -1,15 +1,16 @@
-import app from "./app";
+import app from './app';
+import config from './config';
 
-const PORT = process.env.PORT || 3000;
-
-const server = app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}. Don't expect a payment.`);
+const server = app.listen(config.port, () => {
+  console.log(
+    `Server running in ${config.env} mode on port ${config.port}. Don't expect a payment.`,
+  );
 });
 
 // Graceful shutdown logic
-process.on("SIGTERM", () => {
-  console.info("SIGTERM signal received: closing HTTP server");
+process.on('SIGTERM', () => {
+  console.info('SIGTERM signal received: closing HTTP server');
   server.close(() => {
-    console.log("HTTP server closed");
+    console.log('HTTP server closed');
   });
 });
