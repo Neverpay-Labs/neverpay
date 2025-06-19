@@ -4,15 +4,9 @@ import { PaymentRequest } from '../../interfaces/types';
 
 const router = Router();
 
-/**
- * @route POST /api/payments/observe
- * @desc The "Observer" module logs a new payment request into the system.
- * The controller's job is to validate input and hand off to the service.
- * @access Public
- */
 router.post(
   '/observe',
-  (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const paymentRequest: PaymentRequest = req.body;
 
@@ -21,11 +15,11 @@ router.post(
           message: 'Request lacks substance. Amount and creditor are required.',
         });
       }
-      
-      const result = paymentService.observe(paymentRequest);
+
+      const result = await paymentService.observe(paymentRequest);
 
       res.status(202).json({
-        message: 'Payment request observed. Deferment protocol initiated.',
+        message: 'Payment request observed and deferred.',
         data: result,
       });
     } catch (error) {
@@ -33,5 +27,28 @@ router.post(
     }
   },
 );
+
+/**
+ * @route GET /api/payments/:id
+ * @desc Retrieves the status of a specific deferred payment.
+ * @access Public
+ */
+router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const result = await paymentService.getStatus(id);
+
+    if (!result) {
+      return res.status(404).json({ message: 'Request ID not found in the void.' });
+    }
+
+    res.status(200).json({
+      message: 'Request status retrieved.',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

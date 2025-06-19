@@ -1,32 +1,41 @@
 import { PaymentRequest, AcknowledgedRequest } from '../interfaces/types';
+import { paymentRepository } from '../repositories/paymentRepository';
 
 class PaymentService {
   /**
-   * Simulates the observation and initial processing of a payment request.
-   * This is the entry point into the "Cycle of Evasion".
+   * The service layer contains the core business logic.
+   * It orchestrates calls to the repository layer.
    * @param request The payment request to observe.
    */
-  public observe(request: PaymentRequest): AcknowledgedRequest {
+  public async observe(
+    request: PaymentRequest,
+  ): Promise<AcknowledgedRequest> {
     console.log(
-      `[Service/Observer]: Business logic processing payment request for ${request.amount} to ${request.creditor}.`,
+      `[Service/Observer]: Business logic processing payment for ${request.amount} to ${request.creditor}.`,
     );
 
-    // Here, we would interact with a database, message queue, or other systems.
-    // For now, we generate a record of the acknowledged debt.
+    // Delegate persistence to the repository layer
+    const acknowledgedRequest = await paymentRepository.create(request);
 
-    const acknowledged: AcknowledgedRequest = {
-      ...request,
-      requestId: `req_${Date.now()}`,
-      status: 'OBSERVED',
-      observedAt: Date.now(),
-    };
-    
-    console.log(`[Service/Observer]: Request ${acknowledged.requestId} acknowledged. Deferment protocol will now engage.`);
-    
-    // In the future, this could asynchronously trigger the "Evader" module.
-    // E.g., EvasionModule.begin(acknowledged.requestId);
-    
-    return acknowledged;
+    console.log(
+      `[Service/Evader]: Request ${acknowledgedRequest.requestId} has been successfully deferred.`,
+    );
+
+    return acknowledgedRequest;
+  }
+
+  /**
+   * Retrieves the status and details of a specific request.
+   * @param requestId The ID of the request to check.
+   */
+  public async getStatus(
+    requestId: string,
+  ): Promise<AcknowledgedRequest | null> {
+    const request = await paymentRepository.findById(requestId);
+    if (!request) {
+      return null;
+    }
+    return request;
   }
 }
 
