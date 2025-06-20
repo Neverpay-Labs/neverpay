@@ -1,48 +1,61 @@
 import {
-  PaymentRequest,
+  PaymentRequest as IPaymentRequest,
   AcknowledgedRequest,
   PaymentStatus,
 } from '../interfaces/types';
+import { prisma } from '../lib/prisma';
+import { PaymentRequest } from '@prisma/client';
 
 class PaymentRepository {
-  private requests: AcknowledgedRequest[] = [];
+  /**
+   * Creates and persists a new payment request record in the database.
+   */
+  public async create(
+    request: IPaymentRequest,
+  ): Promise<PaymentRequest> {
+    const now = new Date();
+    const requestId = `req_${now.getTime()}`;
 
-  public async create(request: PaymentRequest): Promise<AcknowledgedRequest> {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    const now = Date.now();
-    const newRecord: AcknowledgedRequest = {
-      ...request,
-      requestId: `req_${now}`,
-      status: 'DEFERRED',
-      observedAt: now,
-      updatedAt: now,
-    };
-    this.requests.push(newRecord);
+    const newRecord = await prisma.paymentRequest.create({
+      data: {
+        ...request,
+        requestId: requestId,
+        status: 'DEFERRED',
+      },
+    });
+
     return newRecord;
   }
 
-  public async findById(id: string): Promise<AcknowledgedRequest | undefined> {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    return this.requests.find((r) => r.requestId === id);
+  /**
+   * Finds a payment request by its unique requestId.
+   */
+  public async findById(
+    id: string,
+  ): Promise<PaymentRequest | null> {
+    return prisma.paymentRequest.findUnique({ where: { requestId: id } });
   }
 
-  public async findAll(): Promise<AcknowledgedRequest[]> {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    return [...this.requests];
+  /**
+   * Retrieves all payment requests from the database.
+   */
+  public async findAll(): Promise<PaymentRequest[]> {
+    return prisma.paymentRequest.findMany({
+      orderBy: { observedAt: 'desc' },
+    });
   }
 
+  /**
+   * Updates the status of a specific payment request.
+   */
   public async updateStatus(
     id: string,
     status: PaymentStatus,
-  ): Promise<AcknowledgedRequest | undefined> {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    const requestIndex = this.requests.findIndex((r) => r.requestId === id);
-    if (requestIndex === -1) {
-      return undefined;
-    }
-    this.requests[requestIndex].status = status;
-    this.requests[requestIndex].updatedAt = Date.now();
-    return this.requests[requestIndex];
+  ): Promise<PaymentRequest | null> {
+    return prisma.paymentRequest.update({
+      where: { requestId: id },
+      data: { status },
+    });
   }
 }
 
