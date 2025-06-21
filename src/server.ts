@@ -1,30 +1,25 @@
 import { Server } from 'http';
 import app from './app';
 import config from './config';
+import logger from './lib/logger';
 import { scheduler } from './core/scheduler';
 
 let server: Server;
 
-// Start the server
 try {
   server = app.listen(config.port, () => {
-    console.log(
-      `Server running in ${config.env} mode on port ${config.port}. Don't expect a payment.`,
-    );
-    // Start the background job simulator
+    logger.info(`Server running in ${config.env} mode on port ${config.port}.`);
     scheduler.start();
   });
 } catch (error) {
-  console.error('Failed to start server:', error);
+  logger.fatal(error, 'Failed to start server');
   process.exit(1);
 }
 
-
-// Graceful shutdown logic
 const exitHandler = () => {
   if (server) {
     server.close(() => {
-      console.log('Server closed. The void is quiet.');
+      logger.info('Server closed. The void is quiet.');
       process.exit(0);
     });
   } else {
@@ -33,21 +28,21 @@ const exitHandler = () => {
 };
 
 const unexpectedErrorHandler = (error: Error) => {
-  console.error('UNCAUGHT EXCEPTION! Shutting down...', error);
+  logger.fatal(error, 'UNCAUGHT EXCEPTION! Shutting down...');
   exitHandler();
 };
 
 process.on('uncaughtException', unexpectedErrorHandler);
 process.on('unhandledRejection', (reason: Error) => {
-  throw reason;
+  throw reason; // Will be caught by uncaughtException handler
 });
 
 process.on('SIGTERM', () => {
-  console.info('SIGTERM received.');
+  logger.info('SIGTERM received.');
   exitHandler();
 });
 
 process.on('SIGINT', () => {
-  console.info('SIGINT received.');
+  logger.info('SIGINT received.');
   exitHandler();
 });
