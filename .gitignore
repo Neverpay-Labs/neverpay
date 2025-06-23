@@ -1,0 +1,45 @@
+# Dependencies
+# Keep node_modules out of the repository, as they are installed via npm/yarn/pnpm
+/node_modules
+
+# Compiled JavaScript, sourcemaps, and declarations
+# These files are generated from your .ts source files
+/dist
+/build
+*.tsbuildinfo
+
+# Log files
+# Logs are runtime artifacts and should not be versioned
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+# Never commit .env files, as they contain secrets and environment-specific settings
+.env
+.env.local
+.env.*.local
+
+# IDE and editor configuration
+# Prevents user-specific editor settings from being shared
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Test reports
+# Coverage reports are generated during test runs
+/coverage
+/.nyc_output
